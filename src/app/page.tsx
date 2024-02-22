@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { db } from '@/app/components/FirebaseHelper'
+import { db } from '@/components/db/FirebaseHelper'
 import { onValue, ref } from 'firebase/database'
 import {
     Table,
