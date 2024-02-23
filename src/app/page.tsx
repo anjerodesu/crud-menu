@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { db } from '@/components/db/FirebaseHelper'
-import { onValue, ref } from 'firebase/database'
+import { onValue, ref, remove } from 'firebase/database'
 import {
     Table,
     TableBody,
@@ -22,6 +22,8 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { MdEdit, MdDelete } from "react-icons/md";
+import { useToast } from "@/components/ui/use-toast"
+import { ToastAction } from '@/components/ui/toast'
 
 interface MenuItemOption {
     label: string
@@ -42,6 +44,22 @@ export default function Home() {
     const [_, setCount] = useState(0);
     const [menuKeys, setMenuKeys] = useState<string[]>([])
     const [menuItems, setMenuItems] = useState<any>({})
+    const { toast } = useToast()
+
+    const onDeleteButtonPressed = (menuItemID: string) => {
+        console.log('Delete button pressed', menuItemID)
+        const menuItemsRef = ref(db, `menuItems/${ _ }`)
+         remove(menuItemsRef).then().catch((error: any) => {
+            toast({
+                title: "Error!",
+                description: "The menu item could not be deleted. Please try again.",
+                action: (
+                    <ToastAction altText="Dismiss">Dismiss</ToastAction>
+                ),
+                variant: 'destructive'
+            })
+        })
+    }
 
     useEffect(() => {
         const id = setInterval(() => setCount((count) => count + 1), 1000);
@@ -96,7 +114,7 @@ export default function Home() {
                                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                                     </Link>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => onDeleteButtonPressed(menuKey)} className="hover:cursor-pointer">
                                                     <MdDelete className="mr-2 h-4 w-4" />
                                                     <span>Delete</span>
                                                     <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
