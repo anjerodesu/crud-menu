@@ -39,7 +39,7 @@ interface MenuItem {
 }
 
 export default function Home() {
-    const [count, setCount] = useState(0);
+    const [_, setCount] = useState(0);
     const [menuKeys, setMenuKeys] = useState<string[]>([])
     const [menuItems, setMenuItems] = useState<any>({})
 
@@ -49,7 +49,6 @@ export default function Home() {
         const menuItemsRef = ref(db, 'menuItems')
         onValue(menuItemsRef, (snapshot) => {
             const data = snapshot.val();
-            console.log('data: ', data)
             setMenuKeys(Object.keys(data))
             setMenuItems(data)
         });
@@ -75,7 +74,7 @@ export default function Home() {
                     {menuKeys.map((menuKey) => {
                         const menuItem = menuItems[menuKey] as MenuItem
                         return (
-                            <TableRow key={menuItem.id}>
+                            <TableRow key={menuKey}>
                                 <TableCell className="font-medium">{ menuItem.name }</TableCell>
                                 <TableCell>{ menuItem.category }</TableCell>
                                 <TableCell>{ menuItem.price }</TableCell>
@@ -91,9 +90,11 @@ export default function Home() {
                                             <DropdownMenuSeparator />
                                             <DropdownMenuGroup>
                                                 <DropdownMenuItem>
-                                                    <MdEdit className="mr-2 h-4 w-4" />
-                                                    <span>Edit</span>
-                                                    <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+                                                    <Link href={ `/edit/${ menuKey }` } className="flex flex-row w-full items-center">
+                                                        <MdEdit className="mr-2 h-4 w-4" />
+                                                        <span>Edit</span>
+                                                        <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+                                                    </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem>
                                                     <MdDelete className="mr-2 h-4 w-4" />

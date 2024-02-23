@@ -9,30 +9,38 @@ import {
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-export default function AddNewItemCloseDialog() {
+interface CancelCloseDialogProps {
+    title: string
+    description: string
+    dialogButtonText: string
+    cancelButtonText: string
+    confirmButtonText: string
+}
+
+export default function CancelCloseDialog({ title, description, dialogButtonText, cancelButtonText, confirmButtonText }: CancelCloseDialogProps) {
     return (
         <>
             <Dialog>
                 <DialogTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
+                    <Button variant="outline">{ dialogButtonText }</Button>
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Are you sure you want to leave?</DialogTitle>
+                        <DialogTitle>{ title }</DialogTitle>
                         <DialogDescription>
-                            This action cannot be undone. This will permanently delete the data you entered.
+                            { description }
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="sm:justify-start md:justify-end">
                         <DialogClose asChild>
                             <Button type="button" variant="outline">
-                                No
+                                { cancelButtonText }
                             </Button>
                         </DialogClose>
                         <DialogClose asChild>
                             <Button asChild>
                                 <Link href={'/'}>
-                                    Yes
+                                    { confirmButtonText }
                                 </Link>
                             </Button>
                         </DialogClose>

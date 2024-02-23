@@ -1,96 +1,34 @@
-'use client'
-
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { db } from '@/components/db/FirebaseHelper'
-import { push, ref } from 'firebase/database'
-import { Input } from '@/components/ui/input'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-export interface FormFieldOptions {
-    label: string;
-    value: number;
-}
-
-export interface FormFieldValues {
-    category: string;
-    name: string;
-    price: number;
-    cost: number;
-    stock: number;
-    options?: FormFieldOptions[];
+interface MenuFormProps {
+    form: any
+    handleSubmit: any
 }
 
 export const menuFormID = 'menu-form'
 
-export default function AddNewItemForm() {
-    const formSchema = z.object({
-        category: z.string().min(3, {
-            message: "Category must be at least 3 characters long",
-        }).max(255),
-        name: z.string().min(3, {
-            message: "Name must be at least 3 characters long",
-        }).max(255),
-        price: z.coerce.number().positive({
-            message: "Price must be a positive number",
-        }),
-        cost: z.coerce.number().positive({
-            message: "Cost must be a positive number",
-        }),
-        stock: z.coerce.number().int().positive({
-            message: "Stock must be a positive integer",
-        }),
-        options: z.array(
-            z.object({
-                label: z.string().min(3, {
-                    message: "Label must be at least 3 characters long",
-                }).max(255),
-                value: z.coerce.number().positive({
-                    message: "Value must be a positive number",
-                })
-            })
-        ).optional()
-    });
-    type Menu = z.infer<typeof formSchema>
-    const form = useForm<Menu>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            category: '',
-            name: '',
-            price: 0,
-            cost: 0,
-            stock: 0,
-            options: [] as FormFieldOptions[],
-        } as FormFieldValues,
-    })
-
-    const router = useRouter()
-    const onSubmitMenu = (menu: FormFieldValues) => {
-        console.log('menu: ', menu)
-        const menuItemsRef = ref(db, 'menuItems')
-        const menuItemKey = push(menuItemsRef, menu).key
-        if (menuItemKey) {
-            console.log('menuItemKey: ', menuItemKey)
-            router.push('/')
-        }
+export default function MenuForm({ form, handleSubmit } : MenuFormProps) {
+    const [options, setOptions] = useState(form.getValues().options)
+    const addNewInput = () => {
+        console.log('addNewInput')
+        setOptions([...options, { label: '', value: 0 }])
     }
 
-    /**
-     * This is a counter for the number of options currently in the form.
-     */
-    const [counter, setCounter] = useState(0)
-    const addNewInput = () => {
-        setCounter(counter + 1);
-    };
+
+    const [_, setCount] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setCount((count) => count + 1), 1000);
+        setOptions(form.getValues().options)
+        return () => clearInterval(id);
+    }, [form])
 
     return (
         <Form { ...form }>
-            <form id={ menuFormID } onSubmit={ form.handleSubmit(onSubmitMenu) } className="space-y-4">
+            <form id={ menuFormID } onSubmit={ form.handleSubmit(handleSubmit) } className="space-y-4">
                 <FormField
                     key="category"
                     control={ form.control }
@@ -164,10 +102,10 @@ export default function AddNewItemForm() {
 
                 <Separator className="my-4" />
                 <div className="flex justify-between">
-                    <h2>Options</h2>
+                    <h2>Options { options.length }</h2>
                     <Button variant="outline" onClick={ addNewInput } type="button">Add Option</Button>
                 </div>
-                { Array(counter).fill(1).map((_, index) => {
+                { Array(options.length).fill(1).map((_, index) => {
                     return (
                         <div key={ `options.${index}` }>
                             <FormField
