@@ -1,6 +1,7 @@
 import { getDatabase, ref } from 'firebase/database'
 import { collection } from 'firebase/firestore'
 import { initializeApp, setLogLevel } from 'firebase/app'
+import { getAuth } from '@firebase/auth'
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY as string,
@@ -15,4 +16,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 const db = getDatabase(app);
-export { db }
+const auth = getAuth(app);
+
+export { db, auth }
