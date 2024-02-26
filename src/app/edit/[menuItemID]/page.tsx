@@ -1,8 +1,8 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import AddMenuItemForm, { menuFormID } from '@/app/add/components/AddMenuItemForm'
 import CancelCloseDialog from '@/components/CancelCloseDialog'
 import { Button } from '@/components/ui/button'
 import EditMenuItemForm from '@/app/edit/components/EditMenuItemForm'
+import { menuFormID } from '@/components/MenuItemForm'
 
 interface EditItemProps {
     params: {

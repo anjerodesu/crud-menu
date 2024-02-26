@@ -1,7 +1,7 @@
 import { getDatabase, ref } from 'firebase/database'
 import { collection } from 'firebase/firestore'
 import { initializeApp, setLogLevel } from 'firebase/app'
-import { getAuth } from '@firebase/auth'
+import { getAuth, type User } from '@firebase/auth'
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY as string,
@@ -18,4 +18,20 @@ const app = initializeApp(firebaseConfig)
 const db = getDatabase(app);
 const auth = getAuth(app);
 
+interface AuthState {
+    isSignedIn: boolean
+    user: User | null
+}
+
+const menuItemsKey = 'menuItems'
+const menuItemsPath = (uuid: string, menuItemID : string | null = null) => {
+    if (menuItemID === null) {
+        return `${ menuItemsKey }/${ uuid }`
+    } else {
+        return `${ menuItemsKey }/${ uuid }/${ menuItemID }`
+    }
+}
+
 export { db, auth }
+export { menuItemsKey, menuItemsPath }
+export type { AuthState }

@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import CancelCloseDialog from '@/components/CancelCloseDialog'
-import AddMenuItemForm, { menuFormID } from '@/app/add/components/AddMenuItemForm'
+import AddMenuItemForm from '@/app/add/components/AddMenuItemForm'
 import { Button } from '@/components/ui/button'
+import { menuFormID } from '@/components/MenuItemForm'
 
 export default function AddItem() {
     return (

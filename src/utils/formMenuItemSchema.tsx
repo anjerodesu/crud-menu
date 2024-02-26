@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const formSchema = z.object({
+export const formMenuItemSchema = z.object({
     category: z.string().min(3, {
         message: "Category must be at least 3 characters long",
     }).max(255),

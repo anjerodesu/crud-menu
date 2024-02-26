@@ -4,34 +4,27 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { db } from '@/components/db/FirebaseHelper'
+import { auth, AuthState, db, menuItemsPath } from '@/components/db/FirebaseHelper'
 import { onValue, ref, update } from 'firebase/database'
-import { useRouter } from 'next/navigation'
-import { formSchema } from '@/utils/formSchema'
-import MenuItemForm from '@/components/MenuItemForm'
+import { formMenuItemSchema } from '@/utils/formMenuItemSchema'
+import MenuItemForm, { FormFieldOptions, FormFieldValues } from '@/components/MenuItemForm'
+import { onAuthStateChanged } from '@firebase/auth'
+import { toast } from '@/components/ui/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 
 interface EditMenuItemFormProps {
     menuItemID: string
 }
 
-export interface FormFieldOptions {
-    label: string;
-    value: number;
-}
-
-export interface FormFieldValues {
-    category: string;
-    name: string;
-    price: number;
-    cost: number;
-    stock: number;
-    options?: FormFieldOptions[];
-}
-
 export default function EditMenuItemForm({ menuItemID }: EditMenuItemFormProps) {
-    type Menu = z.infer<typeof formSchema>
+    const [authState, setAuthState] = useState<AuthState>({
+        isSignedIn: false,
+        user: null,
+    })
+
+    type Menu = z.infer<typeof formMenuItemSchema>
     const form = useForm<Menu>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formMenuItemSchema),
         defaultValues: {
             category: '',
             name: '',
@@ -41,6 +34,24 @@ export default function EditMenuItemForm({ menuItemID }: EditMenuItemFormProps) 
             options: [] as FormFieldOptions[],
         } as FormFieldValues,
     })
+
+    useEffect(() => {
+        const unregisterAuthObserver = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setAuthState({ user, isSignedIn: !!user })
+                const menuItemsRef = ref(db, menuItemsPath(user.uid, menuItemID))
+                onValue(menuItemsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        updateForm(data)
+                    }
+                })
+            }
+        })
+
+        return () => unregisterAuthObserver()
+    }, [])
+
     const updateForm = (data: FormFieldValues) => {
         form.setValue('category', data.category)
         form.setValue('name', data.name)
@@ -50,29 +61,37 @@ export default function EditMenuItemForm({ menuItemID }: EditMenuItemFormProps) 
         form.setValue('options', data.options)
     }
 
-    const [_, setCount] = useState(0);
-    useEffect(() => {
-        const id = setInterval(() => setCount((count) => count + 1), 1000);
-
-        const menuItemsRef = ref(db, `menuItems/${ menuItemID }`)
-        onValue(menuItemsRef, (snapshot) => {
-            const data = snapshot.val();
-            updateForm(data)
-        });
-
-        return () => clearInterval(id);
-    }, [menuItemID])
-
-    const router = useRouter()
     const onSubmitMenu = (menu: FormFieldValues) => {
-        console.log('menu: ', menu)
-        const menuItemsRef = ref(db, `menuItems/${ menuItemID }`)
-        update(menuItemsRef, menu).then(() => {
-            console.log('Data saved successfully!')
-            router.push('/')
-        }).catch((error) => {
-            console.error('Error saving data: ', error)
-        })
+        if (authState.user) {
+            const menuItemsRef = ref(db, menuItemsPath(authState.user.uid, menuItemID))
+            update(menuItemsRef, menu).then(() => {
+                toast({
+                    title: "Success!",
+                    description: "The menu item has been updated successfully.",
+                    action: (
+                        <ToastAction altText="Dismiss">Dismiss</ToastAction>
+                    ),
+                })
+            }).catch((error) => {
+                toast({
+                    title: "Error",
+                    description: `The menu item could not be submitted. Please try again. Error: ${ error.message }`,
+                    action: (
+                        <ToastAction altText="Dismiss">Dismiss</ToastAction>
+                    ),
+                    variant: 'destructive'
+                })
+            })
+        } else {
+            toast({
+                title: "Error",
+                description: "The menu item could not be submitted. Please try again. Error: User not found.",
+                action: (
+                    <ToastAction altText="Dismiss">Dismiss</ToastAction>
+                ),
+                variant: 'destructive'
+            })
+        }
     }
 
     return (

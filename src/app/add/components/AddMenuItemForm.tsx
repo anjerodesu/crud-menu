@@ -3,32 +3,26 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { db } from '@/components/db/FirebaseHelper'
+import { auth, AuthState, db, menuItemsPath } from '@/components/db/FirebaseHelper'
 import { push, ref } from 'firebase/database'
 import { useRouter } from 'next/navigation'
-import { formSchema } from '@/utils/formSchema'
-import MenuItemForm from '@/components/MenuItemForm'
-
-export interface FormFieldOptions {
-    label: string;
-    value: number;
-}
-
-export interface FormFieldValues {
-    category: string;
-    name: string;
-    price: number;
-    cost: number;
-    stock: number;
-    options?: FormFieldOptions[];
-}
-
-export const menuFormID = 'menu-form'
+import { formMenuItemSchema } from '@/utils/formMenuItemSchema'
+import MenuItemForm, { FormFieldOptions, FormFieldValues } from '@/components/MenuItemForm'
+import { useEffect, useState } from 'react'
+import { onAuthStateChanged } from '@firebase/auth'
+import Image from 'next/image'
+import { ToastAction } from '@/components/ui/toast'
+import { toast } from '@/components/ui/use-toast'
 
 export default function AddMenuItemForm() {
-    type Menu = z.infer<typeof formSchema>
+    const [authState, setAuthState] = useState<AuthState>({
+        isSignedIn: false,
+        user: null,
+    })
+
+    type Menu = z.infer<typeof formMenuItemSchema>
     const form = useForm<Menu>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formMenuItemSchema),
         defaultValues: {
             category: '',
             name: '',
@@ -41,14 +35,41 @@ export default function AddMenuItemForm() {
 
     const router = useRouter()
     const onSubmitMenu = (menu: FormFieldValues) => {
-        console.log('menu: ', menu)
-        const menuItemsRef = ref(db, 'menuItems')
-        const menuItemKey = push(menuItemsRef, menu).key
-        if (menuItemKey) {
-            console.log('menuItemKey: ', menuItemKey)
-            router.push('/')
+        if (authState.user) {
+            const menuItemsRef = ref(db, menuItemsPath(authState.user.uid))
+            push(menuItemsRef, menu).then((newMenuItem) => {
+                if (newMenuItem.key) {
+                    router.push('/')
+                }
+            }).catch((error) => {
+                toast({
+                    title: "Error",
+                    description: `The menu item could not be submitted. Please try again. Error: ${ error.message }`,
+                    action: (
+                        <ToastAction altText="Dismiss">Dismiss</ToastAction>
+                    ),
+                    variant: 'destructive'
+                })
+            })
+        } else {
+            toast({
+                title: "Unknown error",
+                description: "The menu item could not be submitted. Please try again.",
+                action: (
+                    <ToastAction altText="Dismiss">Dismiss</ToastAction>
+                ),
+                variant: 'destructive'
+            })
         }
     }
+
+    useEffect(() => {
+        const unregisterAuthObserver = onAuthStateChanged(auth, (user) => {
+            setAuthState({ user, isSignedIn: !!user })
+        })
+
+        return () => unregisterAuthObserver()
+    }, [])
 
     return (
         <MenuItemForm form={ form } handleSubmit={ onSubmitMenu } />
