@@ -59,4 +59,4 @@ Firebase database. The application utilizes Firebase authentication for secure a
 
 ## License
 This project is licensed under the MIT License - see the
-[LICENSE](https://github.com/anjerodesu/Roast/blob/main/LICENSE) file for details.
+[LICENSE](https://github.com/anjerodesu/Roast/blob/main/LICENSE.md) file for details.
