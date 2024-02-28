@@ -63,6 +63,7 @@ export default function EditMenuItemForm({ menuItemID }: EditMenuItemFormProps) 
 
     const onSubmitMenu = (menu: FormFieldValues) => {
         if (authState.user) {
+            console.log('uid, menuItemID', authState.user.uid, menuItemID)
             const menuItemsRef = ref(db, menuItemsPath(authState.user.uid, menuItemID))
             update(menuItemsRef, menu).then(() => {
                 toast({

@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { db, menuItemsPath } from '@/components/db/FirebaseHelper'
 import { onValue, ref, remove } from 'firebase/database'
@@ -25,18 +24,26 @@ import { MdEdit, MdDelete } from "react-icons/md";
 import { useToast } from "@/components/ui/use-toast"
 import { ToastAction } from '@/components/ui/toast'
 import type { User } from '@firebase/auth'
+import {
+    Dialog,
+    DialogContent,
+    DialogTrigger
+} from '@/components/ui/dialog'
+import AddItem from '@/app/add/AddItem'
+import EditItem from '@/app/edit/EditItem'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import OptionsTableCard from '@/app/components/OptionsTableCard'
 
 interface MenuItemProps {
     user: User
 }
 
-interface MenuItemOption {
+export interface MenuItemOption {
     label: string
     value: number
 }
 
 interface MenuItem {
-    id: number
     category: string
     name: string
     price: number
@@ -46,6 +53,9 @@ interface MenuItem {
 }
 
 export default function MenuItems({ user }: MenuItemProps) {
+    const [shouldOpenAddDialog, setOpenAddDialog] = useState<boolean>(false)
+    const [shouldOpenEditDialog, setOpenEditDialog] = useState<boolean>(false)
+    const [menuKey, setMenuKey] = useState<string>('')
     const [menuKeys, setMenuKeys] = useState<string[]>([])
     const [menuItems, setMenuItems] = useState<any>({})
     const { toast } = useToast()
@@ -88,71 +98,86 @@ export default function MenuItems({ user }: MenuItemProps) {
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-start gap-y-6 my-6 py-4">
-            <Table>
-                <TableCaption>A list of menu items.</TableCaption>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Cost</TableHead>
-                        <TableHead>Stocks</TableHead>
-                        <TableHead className="w-[200px]"></TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {menuKeys.map((menuKey) => {
-                        const menuItem = menuItems[menuKey] as MenuItem
-                        return (
-                            <TableRow key={menuKey}>
-                                <TableCell className="font-medium">{ menuItem.name }</TableCell>
-                                <TableCell>{ menuItem.category }</TableCell>
-                                <TableCell>{ menuItem.price }</TableCell>
-                                <TableCell>{ menuItem.cost }</TableCell>
-                                <TableCell>{ menuItem.stock }</TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline">Manage</Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-56">
-                                            <DropdownMenuLabel>Update Menu</DropdownMenuLabel>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuGroup>
-                                                <DropdownMenuItem>
-                                                    <Link href={ `/edit/${ menuKey }` } className="flex flex-row w-full items-center">
-                                                        <MdEdit className="mr-2 h-4 w-4" />
-                                                        <span>Edit</span>
-                                                        <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => onDeleteButtonPressed(menuKey)} className="hover:cursor-pointer">
-                                                    <MdDelete className="mr-2 h-4 w-4" />
-                                                    <span>Delete</span>
-                                                    <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuGroup>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        )
-                    })}
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={6}>
-                            <div className="flex flex-row w-full items-center justify-center">
-                                <Button asChild className="hover:cursor-pointer">
-                                    <Link href={'/add'}>
-                                        Add Menu Item
-                                    </Link>
-                                </Button>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                </TableFooter>
-            </Table>
+            <Dialog open={ shouldOpenEditDialog } onOpenChange={ setOpenEditDialog }>
+                <Table>
+                    <TableCaption>A list of menu items.</TableCaption>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead>Cost</TableHead>
+                            <TableHead>Stocks</TableHead>
+                            <TableHead className="w-[200px]"></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {menuKeys.map((menuKey) => {
+                            const menuItem = menuItems[menuKey] as MenuItem
+                            return (
+                                <HoverCard key={menuKey}>
+                                    <HoverCardTrigger asChild>
+                                        <TableRow>
+                                            <TableCell className="font-medium">{ menuItem.name }</TableCell>
+                                            <TableCell>{ menuItem.category }</TableCell>
+                                            <TableCell>{ menuItem.price }</TableCell>
+                                            <TableCell>{ menuItem.cost }</TableCell>
+                                            <TableCell>{ menuItem.stock }</TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="outline">Manage</Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-56">
+                                                        <DropdownMenuLabel>Update Menu</DropdownMenuLabel>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuGroup>
+                                                            <DropdownMenuItem>
+                                                                <DialogTrigger onClick={() => setMenuKey(menuKey)} className="flex flex-row w-full items-center justify-between">
+                                                                    <MdEdit className="mr-2 h-4 w-4" />
+                                                                    <span>Edit</span>
+                                                                    <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+                                                                </DialogTrigger>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => onDeleteButtonPressed(menuKey)} className="hover:cursor-pointer">
+                                                                <MdDelete className="mr-2 h-4 w-4" />
+                                                                <span>Delete</span>
+                                                                <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuGroup>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="w-80">
+                                        <OptionsTableCard options={ menuItem.options } />
+                                    </HoverCardContent>
+                                </HoverCard>
+                            )
+                        })}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell colSpan={6}>
+                                <div className="flex flex-row w-full items-center justify-center">
+                                    <Dialog open={ shouldOpenAddDialog } onOpenChange={ setOpenAddDialog }>
+                                        <DialogTrigger asChild>
+                                            <Button onClick={() => setOpenAddDialog(true)}>Add Menu Item</Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-[425px] overflow-y-scroll max-h-screen">
+                                            <AddItem params={{ setOpenDialog: setOpenAddDialog }} />
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    </TableFooter>
+                </Table>
+                <DialogContent className="sm:max-w-[425px] overflow-y-scroll max-h-screen">
+                    <EditItem params={{ menuItemID: menuKey }} />
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }

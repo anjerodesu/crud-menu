@@ -30,7 +30,11 @@ export const menuFormID = 'menu-form'
 export default function MenuForm({ form, handleSubmit } : MenuFormProps) {
     const [options, setOptions] = useState<FormFieldOptions[]>(form.getValues().options)
     const addNewInput = () => {
-        setOptions([...options, { label: '', value: 0 }])
+        if (options) {
+            setOptions([...options, { label: '', value: 0 }])
+        } else {
+            setOptions([{ label: '', value: 0 }])
+        }
     }
     const fromKeys = Object.keys(form.getValues());
 

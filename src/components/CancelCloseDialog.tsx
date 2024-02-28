@@ -15,9 +15,10 @@ interface CancelCloseDialogProps {
     dialogButtonText: string
     cancelButtonText: string
     confirmButtonText: string
+    setOpenDialog: (open: boolean) => void
 }
 
-export default function CancelCloseDialog({ title, description, dialogButtonText, cancelButtonText, confirmButtonText }: CancelCloseDialogProps) {
+export default function CancelCloseDialog({ title, description, dialogButtonText, cancelButtonText, confirmButtonText, setOpenDialog }: CancelCloseDialogProps) {
     return (
         <>
             <Dialog>
@@ -38,10 +39,8 @@ export default function CancelCloseDialog({ title, description, dialogButtonText
                             </Button>
                         </DialogClose>
                         <DialogClose asChild>
-                            <Button asChild>
-                                <Link href={'/'}>
-                                    { confirmButtonText }
-                                </Link>
+                            <Button onClick={() => setOpenDialog(false ) }>
+                                { confirmButtonText }
                             </Button>
                         </DialogClose>
                     </DialogFooter>
