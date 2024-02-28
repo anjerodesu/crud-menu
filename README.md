@@ -1,5 +1,5 @@
-# Roast
-Restaurant Menu CRUD App (TypeScript, NextJS, Tailwind, Shadcn/UI, and Firebase)
+# Restaurant Menu CRUD App
+Made with TypeScript, NextJS, Tailwind, Shadcn/UI, and Firebase
 
 ## Description
 This project showcases a simple CRUD (Create, Read, Update, Delete) restaurant menu application built
@@ -17,8 +17,8 @@ To run this project locally, you'll need:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/anjerodesu/Roast.git
-   cd Roast
+   git clone https://github.com/anjerodesu/crud-menu.git
+   cd crud-menu
    ```
 
 2. Install dependencies:
@@ -53,10 +53,10 @@ To run this project locally, you'll need:
    ```
 
 ## Usage
-Navigate to `http://localhost:3000` in your web browser, and you should see Roast's homepage, the
+Navigate to `http://localhost:3000` in your web browser, and you should see the homepage, the
 restaurant menu CRUD app, in action! Authenticated users can create, read, update, and delete menu items from the
 Firebase database. The application utilizes Firebase authentication for secure access control.
 
 ## License
 This project is licensed under the MIT License - see the
-[LICENSE](https://github.com/anjerodesu/Roast/blob/main/LICENSE.md) file for details.
+[LICENSE](https://github.com/anjerodesu/crud-menu/blob/main/LICENSE.md) file for details.
